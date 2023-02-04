@@ -26,11 +26,13 @@ class TradingBotAPI():
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
                     balance = self.client.get_asset_balance(pair[1])['free']
-                    quantity = float(balance * quantity / 100)
+                    quantity = float(balance) * quantity / 100
+                    
                 else:
                     quantity = float(quantity)
 
-                order = client.order_limit_buy(symbol=pair[2], quantity=quantity, price=price)
+                self.order = self.client.order_limit_buy(symbol=pair[2], quantity=quantity, price=price)
+                
 
             case 'sell': 
 
@@ -38,11 +40,11 @@ class TradingBotAPI():
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
                     balance = self.client.get_asset_balance(pair[0])['free']
-                    quantity = float(balance * quantity / 100)
+                    quantity = float(balance) * quantity / 100
                 else:
                     quantity = float(quantity)
 
-                order = client.order_limit_sell(symbol=pair[2], quantity=quantity, price=price)
+                order = self.client.order_limit_sell(symbol=pair[2], quantity=quantity, price=price)
                 
         return order # dict with orderId, symbol, origQty, price, side and status    keys
     
@@ -57,11 +59,11 @@ class TradingBotAPI():
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
                     balance = self.client.get_asset_balance(pair[1])['free']
-                    quantity = float(balance * quantity / 100)
+                    quantity = float(balance) * quantity / 100
                 else:
                     quantity = float(quantity)             
 
-                order = client.order_limit_buy(symbol=pair, quantity=quantity)
+                order = self.client.order_limit_buy(symbol=pair, quantity=quantity)
 
             case 'sell': 
 
@@ -69,11 +71,11 @@ class TradingBotAPI():
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
                     balance = self.client.get_asset_balance(pair[0])['free']
-                    quantity = float(balance * quantity / 100)
+                    quantity = float(balance) * quantity / 100
                 else:
                     quantity = float(quantity)
 
-                order = client.order_limit_sell(symbol=pair, quantity=quantity)
+                order = self.client.order_limit_sell(symbol=pair, quantity=quantity)
                 
         return order['status']
 
@@ -102,11 +104,11 @@ class TradingBotAPI():
 
                 case 'buy':
                     balance = self.client.get_asset_balance(order_1['pair'][1])['free']
-                    order_1['quantity'] = float(balance * order_1['quantity'] / 100)
+                    order_1['quantity'] = float(balance) * order_1['quantity'] / 100
 
                 case 'sell':
                     balance = self.client.get_asset_balance(order_1['pair'][0])['free']
-                    order_1['quantity'] = float(balance * order_1['quantity'] / 100)
+                    order_1['quantity'] = float(balance) * order_1['quantity'] / 100
 
         else:
             order_1['quantity'] = float(order_1['quantity'])
@@ -119,12 +121,12 @@ class TradingBotAPI():
 
                 case 'buy':
                     balance = self.client.get_asset_balance(order_2['pair'][1])['free']
-                    order_2['quantity'] = float(balance * order_2['quantity'] / 100)
+                    order_2['quantity'] = float(balance) * order_2['quantity'] / 100
 
 
                 case 'sell':
                     balance = self.client.get_asset_balance(order_2['pair'][0])['free']
-                    order_2['quantity'] = float(balance * order_2['quantity'] / 100)
+                    order_2['quantity'] = float(balance) * order_2['quantity'] / 100
         else:
             order_2['quantity'] = float(order_2['quantity'])
         
@@ -171,8 +173,8 @@ if __name__ == "__main__":
 
     # examples:
 
-    # api = TradingBotAPI()
-    
+    api = TradingBotAPI()
+    api.create_limit_order('buy', 'MATIC/BRL', '100%', 5.615)
     # print(api.get_pair_price('MATICBRL'))
 
     # api.await_simultaneous_orders(
