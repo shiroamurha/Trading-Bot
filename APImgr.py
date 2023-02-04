@@ -168,10 +168,12 @@ if __name__ == "__main__":
         isso aqui se chama docstring, é tipo um comentario pirocudo
         
     """  
-    
+
     # examples:
 
     # api = TradingBotAPI()
+    
+    # print(api.get_pair_price('MATICBRL'))
 
     # api.await_simultaneous_orders(
     #       'buy', 
