@@ -9,11 +9,12 @@ class TradingBotAPI():
     def __init__(self):
 
         keys = json.load(open('keys.json', 'r'))
-
+    
         self.client = Client(keys['API_KEY'], keys['API_SECRET'])
+        self.exchange_info = self.client.get_exchange_info()['symbols']
 
     def get_pair_price(self, pair):       
-        return self.client.get_ticker(symbol=pair)["lastPrice"]     
+        return float(self.client.get_ticker(symbol=pair)["lastPrice"])     
 
     def create_limit_order(self, type, pair, quantity, price):
 
@@ -21,61 +22,28 @@ class TradingBotAPI():
 
         match type:
             case 'buy': 
-
-                if quantity.find('%') > 0: 
-                    # i.e. if there is '%' in the quantity
-                    quantity = float(quantity.replace('%', ''))
-                    balance = self.client.get_asset_balance(pair[1])['free']
-                    quantity = float(balance) * quantity / 100
-                    
-                else:
-                    quantity = float(quantity)
-
-                self.order = self.client.order_limit_buy(symbol=pair[2], quantity=quantity, price=price)
+                quantity = self.handle_percentage(type, pair, quantity, price)
+                self.client.order_limit_buy(symbol=pair[2], quantity=quantity, price=price)
                 
-
             case 'sell': 
-
-                if quantity.find('%') > 0: 
-                    # i.e. if there is '%' in the quantity
-                    quantity = float(quantity.replace('%', ''))
-                    balance = self.client.get_asset_balance(pair[0])['free']
-                    quantity = float(balance) * quantity / 100
-                else:
-                    quantity = float(quantity)
-
-                order = self.client.order_limit_sell(symbol=pair[2], quantity=quantity, price=price)
-                
-        return order # dict with orderId, symbol, origQty, price, side and status    keys
+                quantity = self.handle_percentage(type, pair, quantity, price)
+                self.client.order_limit_sell(symbol=pair[2], quantity=quantity, price=price)
     
     def create_market_order(self, type, pair, quantity):
 
         pair = self.split_pair(pair)
 
         match type:
+
             case 'buy': 
 
-                if quantity.find('%') > 0: 
-                    # i.e. if there is '%' in the quantity
-                    quantity = float(quantity.replace('%', ''))
-                    balance = self.client.get_asset_balance(pair[1])['free']
-                    quantity = float(balance) * quantity / 100
-                else:
-                    quantity = float(quantity)             
-
-                order = self.client.order_limit_buy(symbol=pair, quantity=quantity)
+                quantity = self.handle_percentage(type, pair, quantity, self.get_pair_price(pair[2]))
+                order = self.client.order_market_buy(symbol=pair, quantity=quantity)
 
             case 'sell': 
 
-                if quantity.find('%') > 0: 
-                    # i.e. if there is '%' in the quantity
-                    quantity = float(quantity.replace('%', ''))
-                    balance = self.client.get_asset_balance(pair[0])['free']
-                    quantity = float(balance) * quantity / 100
-                else:
-                    quantity = float(quantity)
-
-                order = self.client.order_limit_sell(symbol=pair, quantity=quantity)
+                quantity = self.handle_percentage(type, pair, quantity, self.get_pair_price(pair[2]))
+                order = self.client.order_market_sell(symbol=pair, quantity=quantity)
                 
         return order['status']
 
@@ -92,60 +60,40 @@ class TradingBotAPI():
         # both orders should have the same type of order: buy or sell 
         # loop will wait for the first price to be beaten and do a market order
 
+        # method parameters treatment
         order_1['pair'] = self.split_pair(order_1['pair'])
-        order_2['pair'] = self.split_pair(order_2['pair'])
-        # -> 'pair': ['ABC', 'DEF','ABCDEF']
-
-        if order_1['quantity'].find('%') > 0: 
-            # i.e. if there is '%' in the quantity
-            order_1['quantity'] = float(order_1['quantity'].replace('%', ''))
-
-            match type:
-
-                case 'buy':
-                    balance = self.client.get_asset_balance(order_1['pair'][1])['free']
-                    order_1['quantity'] = float(balance) * order_1['quantity'] / 100
-
-                case 'sell':
-                    balance = self.client.get_asset_balance(order_1['pair'][0])['free']
-                    order_1['quantity'] = float(balance) * order_1['quantity'] / 100
-
-        else:
-            order_1['quantity'] = float(order_1['quantity'])
-
-        if order_2['quantity'].find('%') > 0: 
-            # i.e. if there is '%' in the quantity
-            order_2['quantity'] = float(order_2['quantity'].replace('%', ''))
-
-            match type:
-
-                case 'buy':
-                    balance = self.client.get_asset_balance(order_2['pair'][1])['free']
-                    order_2['quantity'] = float(balance) * order_2['quantity'] / 100
-
-
-                case 'sell':
-                    balance = self.client.get_asset_balance(order_2['pair'][0])['free']
-                    order_2['quantity'] = float(balance) * order_2['quantity'] / 100
-        else:
-            order_2['quantity'] = float(order_2['quantity'])
+        order_2['pair'] = self.split_pair(order_2['pair'])       
         
+        order_1['quantity'] = self.handle_percentage(type, order_1['pair'], order_1['quantity'], order_1['price']) 
+        order_2['quantity'] = self.handle_percentage(type, order_2['pair'], order_2['quantity'], order_2['price']) 
 
         price_1 = self.get_pair_price(order_1['pair'][2])
         price_2 = self.get_pair_price(order_2['pair'][2])
 
+        # main worker loop checking the prices
         while True:
             
             if price_1 >= order_1['price']:
 
                 order_status = self.create_market_order(type, order_1['pair'][2], order_1['quantity'])
-                print(f'ORDER 1 DONE AT {str(datetime.now())[:19]}: \nSTATUS: {order_status}\n [{order_1["pair"][2], order_1["quantity"], price_1}]')
+                log = f'ORDER 1 DONE AT {str(datetime.now())[:19]}: \nSTATUS: {order_status}\n [{order_1["pair"][2], order_1["quantity"], price_1}]'
+                old_logs = open('logs.txt', 'r').read()                
+                with open('logs.txt', 'w') as write_logs:
+                    write_logs.write(f'{old_logs}\n{log}')
+                
+                print(log)
                 break
 
             elif price_2 >= order_2['price']:
 
                 order_status = self.create_market_order(type, order_2['pair'][2], order_2['quantity'])
-                print(f'ORDER 2 DONE AT {str(datetime.now())[:19]}: \nSTATUS: {order_status}\n [{order_2["pair"][2], order_2["quantity"], price_2}]')
+                
+                log = f'ORDER 2 DONE AT {str(datetime.now())[:19]}: \nSTATUS: {order_status}\n [{order_2["pair"][2], order_2["quantity"], price_2}]'
+                old_logs = open('logs.txt', 'r').read()                
+                with open('logs.txt', 'w') as write_logs:
+                    write_logs.write(f'{old_logs}\n{log}')
+                
+                print(log)
                 break
             
             else:
@@ -153,6 +101,34 @@ class TradingBotAPI():
                 price_2 = self.get_pair_price(order_2['pair'][2])
                 continue
     
+    def handle_percentage(self, type, pair, quantity, price):
+
+        match type:
+            case 'buy': 
+
+                if quantity.find('%') > 0: 
+                    # i.e. if there is '%' in the quantity
+                    quantity = float(quantity.replace('%', ''))
+                    balance = self.client.get_asset_balance(pair[1])['free']
+                    quantity = (float(balance) * quantity / 100) / price
+
+                else: 
+                    quantity = float(quantity)
+
+            case 'sell': 
+
+                if quantity.find('%') > 0: 
+                    # i.e. if there is '%' in the quantity
+                    quantity = float(quantity.replace('%', ''))
+                    balance = self.client.get_asset_balance(pair[0])['free']
+                    quantity = (float(balance) * quantity / 100) / price
+                    
+                else: 
+                    quantity = float(quantity)
+
+        return round(quantity, self.get_currency_precision(pair[2]))
+
+
     def split_pair(self, pair):
 
         pair = pair.split('/') # 'ABC/DEF' -> ['ABC','DEF'] 
@@ -161,10 +137,25 @@ class TradingBotAPI():
         return pair
 
 
+    def get_currency_precision(self, pair):
+
+        for symbol in self.exchange_info:
+
+            if symbol['symbol'] == pair:
+
+                precision = symbol['filters'][1]['stepSize']
+                precision = str(precision).find('1') - 1 
+
+                if precision == -1:
+                    return 0
+                else:
+                    return precision
+
 
 if __name__ == "__main__":
 
     """
+
         da pra tirar tudo de comentario selecionando os bagulhos e apertando ctrl + ;
 
         isso aqui se chama docstring, é tipo um comentario pirocudo
@@ -173,9 +164,7 @@ if __name__ == "__main__":
 
     # examples:
 
-    api = TradingBotAPI()
-    api.create_limit_order('buy', 'MATIC/BRL', '100%', 5.615)
-    # print(api.get_pair_price('MATICBRL'))
+    # api = TradingBotAPI()
 
     # api.await_simultaneous_orders(
     #       'buy', 
@@ -184,4 +173,5 @@ if __name__ == "__main__":
     # )
 
     # api.create_limit_order('buy', 'NEAR/USDT', '100%', 2.150)
+    
     # api.create_market_order('buy', 'BNB/USDT', '100%')
