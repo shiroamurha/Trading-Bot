@@ -38,12 +38,12 @@ class TradingBotAPI():
             case 'buy': 
 
                 quantity = self.handle_percentage(type, pair, quantity, self.get_pair_price(pair[2]))
-                order = self.client.order_market_buy(symbol=pair, quantity=quantity)
+                order = self.client.order_market_buy(symbol=pair[2], quantity=quantity)
 
             case 'sell': 
 
                 quantity = self.handle_percentage(type, pair, quantity, self.get_pair_price(pair[2]))
-                order = self.client.order_market_sell(symbol=pair, quantity=quantity)
+                order = self.client.order_market_sell(symbol=pair[2], quantity=quantity)
                 
         return order['status']
 
@@ -110,7 +110,7 @@ class TradingBotAPI():
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
                     balance = self.client.get_asset_balance(pair[1])['free']
-                    quantity = (float(balance) * quantity / 100) / price
+                    quantity = (float(balance) * quantity / 100)
 
                 else: 
                     quantity = float(quantity)
@@ -120,13 +120,15 @@ class TradingBotAPI():
                 if quantity.find('%') > 0: 
                     # i.e. if there is '%' in the quantity
                     quantity = float(quantity.replace('%', ''))
-                    balance = self.client.get_asset_balance(pair[0])['free']
-                    quantity = (float(balance) * quantity / 100) / price
-                    
+                    balance = float(self.client.get_asset_balance(pair[0])['free'])
+                    quantity = (balance * quantity / 100)
                 else: 
                     quantity = float(quantity)
 
-        return round(quantity, self.get_currency_precision(pair[2]))
+        precision = self.get_currency_precision(pair[2])
+        quantity = int(quantity * 10**precision) / 10**precision
+
+        return quantity
 
 
     def split_pair(self, pair):
@@ -150,7 +152,8 @@ class TradingBotAPI():
                     return 0
                 else:
                     return precision
-
+    # def fee(self):
+    #     print(self.client.get_trade_fee(symbol='AXSBNB'))
 
 if __name__ == "__main__":
 
@@ -164,8 +167,9 @@ if __name__ == "__main__":
 
     # examples:
 
-    # api = TradingBotAPI()
-
+    api = TradingBotAPI()
+    print(api.handle_percentage('sell', ['BTC','BRL','BTCBRL'], '100%', 115800.1))
+    #api.create_market_order('buy', 'AXS/BTC', '100%')
     # api.await_simultaneous_orders(
     #       'buy', 
     #       {'pair':'BTC/BUSD', 'quantity':0.001, 'price':24000}, 
