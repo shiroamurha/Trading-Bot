@@ -11,13 +11,11 @@ def login():
     client = kc.Client(API_KEY, API_SECRET, 'shiro123')
 
 
-def main():
+def insta_buySell(buy_quantity, pair):
 
-    login()
+    # buy_quantity = 5.70 ## value in USDT to use
 
-    buy_quantity = 10.0 ## value in USDT to use
-
-    pair = input('currency: ') # any
+    # pair = input('currency: ') # any
     price = float(client.get_ticker(f'{pair}-USDT').get('price'))
 
     buy_order = client.create_market_order(f'{pair}-USDT', 'buy', funds=buy_quantity)
@@ -34,16 +32,16 @@ def main():
         if item.get('currency') == pair and item.get('type') == 'trade':
             sell_quantity = float(item.get('available'))
 
-    after_price = int(price * 1.5 * precision)/precision  #truncating long float numbers to the supported precision
-                            # 1.5 is the price ratio to sell (+50%) 
+    after_price = int(price * 1.35 * precision)/precision  #truncating long float numbers to the supported precision
+                            # 1.35 is the price ratio to sell (+35%) 
     print(f'{price} - {after_price} - {sell_quantity}')
     sell_order = client.create_limit_order(f'{pair}-USDT', 'sell', after_price, sell_quantity)
 
     json.dump(client.get_accounts(), open('account.json', 'w'), indent=4)
     json.dump(all_symbols, open('symbols.json', 'w'), indent=4)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
     
 
 #client.get_ticker('BTC-USDT').get('price')
