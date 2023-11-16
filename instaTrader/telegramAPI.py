@@ -6,21 +6,7 @@ import kucoinAPI
 
 
 
-amount = 13.0
-channel_link = 't.me/TodayWePush' 
-#   t.me/TodayWePush
-#   t.me/+dfOF0OmHl6YwMjQ9 big pumps
-trade_datetime = {
-    "day": "05", 
-    "hour": 14
-}
-
-trade_datetime['before'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour") - 1}'
-trade_datetime['exact'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour")}'
-
-
-
-def login_telegram():
+def login():
     global client
     telethon_keys = [
         '', 
@@ -47,7 +33,7 @@ def extract_coin_from(message):
     # then 'TDSU-RNYS/edart/moc.niocuk.www//:sptth opipip'
     # finds the indexes between - and /,  that corresponds to RNYS then reverts it again: SYNR
 
-async def wait_for_datetime():
+async def wait_for_datetime(trade_datetime):
 
     while str(datetime.datetime.now())[8:13] != trade_datetime.get('before'): #'day hour' -> '8 14'
         #print(str(datetime.datetime.now())[9:13])
@@ -57,8 +43,9 @@ async def wait_for_datetime():
 
 
 
-async def check_message():
-    global globalpair, channel_link
+async def check_message(channel_link, trade_datetime):
+
+    global globalpair 
 
     while str(datetime.datetime.now())[8:13] != trade_datetime.get('exact'): #8 14h
         await asyncio.sleep(0.1)
@@ -75,26 +62,3 @@ async def check_message():
             if globalpair is not None:
                 client.disconnect()
                 break
-
-
-
-def main():
-    
-    global amount, globalpair
-
-    asyncio.get_event_loop().run_until_complete(wait_for_datetime())
-    kucoinAPI.login()
-    
-    try:
-        login_telegram()
-        client.loop.run_until_complete(check_message())
-
-    except ConnectionError: # when it finds the coin it disconects from telethon
-        kucoinAPI.insta_buySell(amount, globalpair)
-        
-    print(globalpair)      
-
-
-
-if __name__ == '__main__':
-    main()

@@ -36,11 +36,3 @@ def insta_buySell(buy_quantity, pair):
                             # 1.35 is the price ratio to sell (+35%) 
     print(f'{price} - {after_price} - {sell_quantity}')
     sell_order = client.create_limit_order(f'{pair}-USDT', 'sell', after_price, sell_quantity)
-
-
-
-# if __name__ == '__main__':
-#     main()
-    
-
-#client.get_ticker('BTC-USDT').get('price')
