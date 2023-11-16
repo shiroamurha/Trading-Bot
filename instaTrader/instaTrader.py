@@ -5,7 +5,8 @@ import asyncio
 
 
 amount = 1.0 #USDT
-trade_datetime = {
+percentage = 1.35 # = 35%
+trade_datetime = { 
     "day": 19, 
     "hour": 14
 }
@@ -35,7 +36,7 @@ def main():
 
     except ConnectionError: # when it finds the coin it disconects from telethon
         print(tg.globalpair)
-        kc.insta_buySell(amount, tg.globalpair)
+        kc.insta_buySell(amount, tg.globalpair, percentage)
   
          
 
