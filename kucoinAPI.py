@@ -1,5 +1,5 @@
 import kucoin.client as kc
-import json
+
 
 
 def login():
@@ -37,8 +37,7 @@ def insta_buySell(buy_quantity, pair):
     print(f'{price} - {after_price} - {sell_quantity}')
     sell_order = client.create_limit_order(f'{pair}-USDT', 'sell', after_price, sell_quantity)
 
-    json.dump(client.get_accounts(), open('account.json', 'w'), indent=4)
-    json.dump(all_symbols, open('symbols.json', 'w'), indent=4)
+
 
 # if __name__ == '__main__':
 #     main()
