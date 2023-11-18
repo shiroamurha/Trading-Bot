@@ -1,3 +1,3 @@
-# Trading-Bot
-Automated binance trading bot
-<h3>REMEMBER TO PUT YOUR API KEYS ON THE JSON BEFORE RUNNING ANYTHING</h3>
+- poe as keys nas APIs
+- bota a data dos pumps
+- faz o l
