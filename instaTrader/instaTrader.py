@@ -4,22 +4,23 @@ import asyncio
 
 
 
-amount = 1.0 #USDT
+amount = 28.0 #USDT
 percentage = 1.35 # = 35%
 trade_datetime = { 
-    "day": 19, 
+    "day": 23, 
     "hour": 14
 }
 channel_link = 't.me/TodayWePush' 
 #   t.me/+tiRgWqoxKK01ZTAx test
 #   t.me/TodayWePush
 #   t.me/+dfOF0OmHl6YwMjQ9 big pumps
+#   t.me/kucoin_crypto_pumps_trading
 
 if len(str(trade_datetime['day'])) == 1:
     trade_datetime['day'] =  f'0{trade_datetime["day"]}'
     
-trade_datetime['before'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour") - 1}'
-trade_datetime['exact'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour")}'
+trade_datetime['before'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour")-1}'
+trade_datetime['exact'] = f'{trade_datetime.get("day")} {trade_datetime.get("hour")-1}:59:55'
 
    
 ####### 

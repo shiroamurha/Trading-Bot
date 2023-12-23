@@ -2,7 +2,6 @@ import asyncio
 from telethon.sync import TelegramClient
 from telethon import events
 import datetime
-import kucoinAPI
 
 
 
@@ -10,8 +9,7 @@ def login():
     global client
     telethon_keys = [
         '', 
-        '', 
-        '6473434844:AAEjB63mfg7dqtlzAzkSNQZVLxOQMDWfMJ4'
+        ''
     ]
 
     client = TelegramClient('shiro', telethon_keys[0], telethon_keys[1])
@@ -37,7 +35,7 @@ async def wait_for_datetime(trade_datetime):
 
     while str(datetime.datetime.now())[8:13] != trade_datetime.get('before'): #'day hour' -> '8 14'
         #print(str(datetime.datetime.now())[9:13])
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
 
     print('passed threshold time: 1 hour left')
 
@@ -47,14 +45,14 @@ async def check_message(channel_link, trade_datetime):
 
     global globalpair 
 
-    while str(datetime.datetime.now())[8:13] != trade_datetime.get('exact'): #8 14h
-        await asyncio.sleep(0.1)
+    while str(datetime.datetime.now())[8:19] != trade_datetime.get('exact'): #8 14h
+        await asyncio.sleep(0.2)
 
     print('passed exact time: les go xd')
     channel_id = await client.get_entity(channel_link) 
 
     while True:
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.6)
 
         async for message in client.iter_messages(channel_id, limit=1):
             globalpair = extract_coin_from(message.text)

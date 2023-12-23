@@ -8,7 +8,7 @@ def login():
     API_KEY = ''                      #        test'64710815ba02b40001f9cc3d'
     API_SECRET = ''       #        test 'b03e7827-4c1f-4064-84d7-c8c6758c38ad'
 
-    client = kc.Client(API_KEY, API_SECRET, 'shiro123')
+    client = kc.Client(API_KEY, API_SECRET, passphrase = 'shiro123')
 
 
 def insta_buySell(buy_quantity, pair, percentage):
