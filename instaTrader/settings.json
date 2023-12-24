@@ -1,0 +1,26 @@
+{
+    "KEYS": {
+        "KC-KEY": "",
+        "KC-SECRET": "",
+        "KC-PASSPHRASE": "", 
+        "TG-ID": "",
+        "TG-HASH": ""
+    },
+
+    "TRADE-ASSETS": {
+        "amount": 0.01,
+        "percentage": 35,
+        "trade_datetime": [24, 14],
+
+        "channel_link": "t.me/+tiRgWqoxKK01ZTAx",
+        "default_channels": [
+            "t.me/+dfOF0OmHl6YwMjQ9",
+            "t.me/TodayWePush", 
+            " t.me/kucoin_crypto_pumps_trading",
+
+        
+            
+            "t.me/+tiRgWqoxKK01ZTAx"
+        ]
+    }
+}
